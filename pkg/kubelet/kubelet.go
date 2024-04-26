@@ -787,12 +787,15 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 				return nil, fmt.Errorf("failed to initialize file based certificate manager: %w", err)
 			}
 		}
-		kubeDeps.TLSOptions.Config.GetCertificate = func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
-			cert := klet.serverCertificateManager.Current()
-			if cert == nil {
-				return nil, fmt.Errorf("no serving certificate available for the kubelet")
+
+		if klet.serverCertificateManager != nil {
+			kubeDeps.TLSOptions.Config.GetCertificate = func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+				cert := klet.serverCertificateManager.Current()
+				if cert == nil {
+					return nil, fmt.Errorf("no serving certificate available for the kubelet")
+				}
+				return cert, nil
 			}
-			return cert, nil
 		}
 	}
 
